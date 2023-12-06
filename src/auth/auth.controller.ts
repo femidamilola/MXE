@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import {
   CreateAccountDto,
   RequestMobileVerification,
@@ -17,6 +17,7 @@ export class AuthController {
     name: 'type',
     enum: ['email', 'mobile'],
   })
+  @ApiOperation({ summary: ' Request for mobile verification' })
   requestMobileVerification(
     @Body() dto: RequestMobileVerification,
     @Param('type') type: 'email' | 'mobile',
@@ -25,16 +26,19 @@ export class AuthController {
   }
 
   @Post('verify-mobile')
+  @ApiOperation({ summary: 'Verify Mobile' })
   verifyMobile(@Body() dto: VerifyMobileNumberDto) {
     return this.authService.verifyMobile(dto);
   }
 
   @Post('create-account')
+  @ApiOperation({ summary: 'Create account for user' })
   createAccount(@Body() dto: CreateAccountDto) {
     return this.authService.createAccount(dto);
   }
 
   @Get(':tag')
+  @ApiOperation({ summary: 'Check if mxe tag exists' })
   checkMxeTagExists(@Param('tag') tag: string) {
     return this.authService.checkMxeTagExists(tag);
   }
