@@ -6,6 +6,7 @@ import {
   RequestMobileVerification,
   UpdateAccountDetails,
   VerifyMobileNumberDto,
+  updateAccountPinDto,
 } from './dto/auth.dto';
 
 @ApiTags('auth')
@@ -48,5 +49,11 @@ export class AuthController {
   @ApiOperation({ summary: 'Update account details' })
   updateAccountDetails(@Body() dto: UpdateAccountDetails) {
     return this.authService.updateAccountDetails(dto);
+  }
+
+  @Patch('account/change-pin')
+  @ApiOperation({ summary: 'Update account pin' })
+  updateAccountPin(@Body() dto: updateAccountPinDto) {
+    return this.authService.updateAccountPin(dto);
   }
 }

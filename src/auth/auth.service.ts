@@ -6,9 +6,10 @@ import {
   RequestMobileVerification,
   UpdateAccountDetails,
   VerifyMobileNumberDto,
+  updateAccountPinDto,
 } from './dto/auth.dto';
 import { UtilService } from 'src/utils/util.service';
-import { hash } from 'argon2';
+import { hash, verify } from 'argon2';
 
 @Injectable()
 export class AuthService {
@@ -188,7 +189,7 @@ export class AuthService {
   async updateAccountDetails(dto: UpdateAccountDetails) {
     try {
       const updatedAccount = await this.prismaService.account.update({
-        where: { email: dto.email },
+        where: { id: dto.accountId },
         data: {
           firstName: dto.firstName,
           lastName: dto.lastName,
@@ -212,6 +213,34 @@ export class AuthService {
           HttpStatus.NOT_FOUND,
         );
       }
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async updateAccountPin(dto: updateAccountPinDto) {
+    try {
+      const account = await this.prismaService.account.findFirst({
+        where: { id: dto.accountId },
+      });
+      if (!account) {
+        throw new HttpException(
+          'Account does not exists',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      const passwordMatches = await verify(account.pin, dto.oldPin);
+      if (!passwordMatches) {
+        throw new HttpException('Incorrect password', HttpStatus.NOT_FOUND);
+      }
+
+      await this.prismaService.account.update({
+        where: { id: dto.accountId },
+        data: { pin: await hash(dto.newPin) },
+      });
+
+      return { message: 'Account pin changed successfully' };
+    } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
