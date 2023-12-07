@@ -22,18 +22,24 @@ export class AuthService {
     type: 'mobile' | 'email',
   ) {
     try {
-      const user = await this.prismaService.user.findFirst({
+      const userExists = await this.prismaService.user.findFirst({
         where: { mobileNumber: dto.mobileNumber },
       });
-      if (user) {
+      if (userExists && userExists.isMobileVerified === true) {
         throw new HttpException(
           'User with mobile number already exists',
           HttpStatus.BAD_REQUEST,
         );
       }
 
-      // generate otp and send to user
+      // delete user if it exists and mobile is not verified
+      if (userExists && userExists.isMobileVerified === false) {
+        await this.prismaService.user.delete({ where: { id: userExists.id } });
+      }
+
       const otp = this.utilService.generateOtp();
+
+      console.log(otp);
 
       // send message if type is mobile
       if (type === 'mobile') {
@@ -41,25 +47,26 @@ export class AuthService {
           dto.mobileNumber,
         );
         await this.messageService.sendTestMessage(
-          `${user.countryCode}${parsesedMobileNumber}`,
+          `${dto.countryCode}${parsesedMobileNumber}`,
           `Your mobile verification otp is ${otp}`,
         );
 
-        // hash the token using jwt
+        const user = await this.prismaService.user.create({
+          data: {
+            mobileNumber: dto.mobileNumber,
+          },
+        });
+
+        // hash the token using jwt and save
 
         await this.prismaService.otp.create({
           data: { otp: otp, user: { connect: { id: user.id } } },
         });
-      }
 
-      return {
-        message: 'Verifiation massage sent',
-        data: {
-          userId: user.id,
-          createdAt: user.createdAt,
-          mobileNumber: user.mobileNumber,
-        },
-      };
+        return {
+          message: 'Verifiation message sent',
+        };
+      }
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -67,19 +74,10 @@ export class AuthService {
 
   async verifyMobile(dto: VerifyMobileNumberDto) {
     try {
-      const otpExists = await this.prismaService.otp.findFirst({
-        where: { userId: dto.userId },
-      });
-      if (!otpExists) {
-        throw new HttpException(
-          'Mobile verification otp not found',
-          HttpStatus.NOT_FOUND,
-        );
-      }
-
       const user = await this.prismaService.user.findFirst({
-        where: { id: dto.userId },
+        where: { mobileNumber: dto.mobileNumber },
       });
+
       if (!user) {
         throw new HttpException('User does not exist', HttpStatus.BAD_REQUEST);
       }
@@ -91,12 +89,22 @@ export class AuthService {
         );
       }
 
+      const otpExists = await this.prismaService.otp.findFirst({
+        where: { userId: user.id },
+      });
+      if (!otpExists) {
+        throw new HttpException(
+          'Mobile verification otp not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
       if (otpExists.otp !== dto.otp) {
         throw new HttpException('Invalid otp', HttpStatus.UNAUTHORIZED);
       }
 
       await this.prismaService.user.update({
-        where: { id: dto.userId },
+        where: { id: user.id },
         data: { isMobileVerified: true },
       });
 
