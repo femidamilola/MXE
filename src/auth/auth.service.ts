@@ -206,6 +206,12 @@ export class AuthService {
 
       return updatedAccount;
     } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException(
+          'Account does not exists',
+          HttpStatus.NOT_FOUND,
+        );
+      }
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
