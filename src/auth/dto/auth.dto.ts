@@ -6,7 +6,7 @@ export class RequestMobileVerification {
   @IsNotEmpty()
   mobileNumber: string;
 
-  @ApiProperty()
+  @ApiProperty({ default: '+234' })
   @IsOptional()
   countryCode: string;
 }
