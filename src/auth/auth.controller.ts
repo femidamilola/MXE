@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import {
   CreateAccountDto,
   RequestMobileVerification,
+  UpdateAccountDetails,
   VerifyMobileNumberDto,
 } from './dto/auth.dto';
 
@@ -41,5 +42,11 @@ export class AuthController {
   @ApiOperation({ summary: 'Check if mxe tag exists' })
   checkMxeTagExists(@Param('tag') tag: string) {
     return this.authService.checkMxeTagExists(tag);
+  }
+
+  @Patch('account')
+  @ApiOperation({ summary: 'Update account details' })
+  updateAccountDetails(@Body() dto: UpdateAccountDetails) {
+    return this.authService.updateAccountDetails(dto);
   }
 }

@@ -4,6 +4,7 @@ import { MessageService } from 'src/utils/message.service';
 import {
   CreateAccountDto,
   RequestMobileVerification,
+  UpdateAccountDetails,
   VerifyMobileNumberDto,
 } from './dto/auth.dto';
 import { UtilService } from 'src/utils/util.service';
@@ -180,7 +181,31 @@ export class AuthService {
       if (error.code === 'P2025') {
         throw new HttpException('User does not exists', HttpStatus.NOT_FOUND);
       }
-      console.log(error);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async updateAccountDetails(dto: UpdateAccountDetails) {
+    try {
+      const updatedAccount = await this.prismaService.account.update({
+        where: { email: dto.email },
+        data: {
+          firstName: dto.firstName,
+          lastName: dto.lastName,
+          mxeTag: dto.mxeTag,
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          mxeTag: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      return updatedAccount;
+    } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
