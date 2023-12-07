@@ -7,6 +7,7 @@ import {
   VerifyMobileNumberDto,
 } from './dto/auth.dto';
 import { UtilService } from 'src/utils/util.service';
+import { hash } from 'argon2';
 
 @Injectable()
 export class AuthService {
@@ -144,8 +145,7 @@ export class AuthService {
           user: {
             connect: { id: dto.userId },
           },
-          // dont forget to hash the pin
-          pin: dto.pin,
+          pin: await hash(dto.pin),
         },
         select: {
           id: true,
