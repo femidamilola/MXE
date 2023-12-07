@@ -27,7 +27,7 @@ export class AuthService {
       });
       if (userExists && userExists.isMobileVerified === true) {
         throw new HttpException(
-          'User with mobile number already exists',
+          'User with mobile number is already verified',
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -38,8 +38,6 @@ export class AuthService {
       }
 
       const otp = this.utilService.generateOtp();
-
-      console.log(otp);
 
       // send message if type is mobile
       if (type === 'mobile') {
@@ -90,7 +88,11 @@ export class AuthService {
       }
 
       const otpExists = await this.prismaService.otp.findFirst({
-        where: { userId: user.id },
+        where: {
+          user: {
+            mobileNumber: dto.mobileNumber,
+          },
+        },
       });
       if (!otpExists) {
         throw new HttpException(
@@ -161,11 +163,19 @@ export class AuthService {
           firstName: true,
           lastName: true,
           mxeTag: true,
-          // createdAt: true
+          createdAt: true,
+          updatedAt: true,
+          user: {
+            select: {
+              id: true,
+              isMobileVerified: true,
+              mobileNumber: true,
+            },
+          },
         },
       });
 
-      return { message: 'Account created', data: account };
+      return { message: 'Account created', account: account };
     } catch (error) {
       if (error.code === 'P2025') {
         throw new HttpException('User does not exists', HttpStatus.NOT_FOUND);
