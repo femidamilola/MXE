@@ -11,20 +11,20 @@ datasource db {
 }
 
 model User {
-  id                String    @id @default(uuid()) 
-  email             String?    @unique
-  mobileNumber      String    @unique
+  id                String      @id @default(uuid()) 
+  email             String?     @unique
+  mobileNumber      String      @unique
   countryCode String? @default("234")
-  isMobileVerified  Boolean   @default(false)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  isMobileVerified  Boolean     @default(false)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
   otp               Otp?
   account           Account?
 }
 
 model Otp {
   id                      String    @id @default(uuid())
-  user                    User      @relation(fields: [userId], references: [id])  
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)  
   userId                  String    @unique
   otp                     String
   createdAt               DateTime  @default(now())
@@ -32,13 +32,14 @@ model Otp {
 
 model Account {
   id               String    @id @default(uuid())
-  email            String @unique
+  email            String    @unique
   firstName        String
   lastName         String
   pin              String
-  mxeTag           String
+  mxeTag           String   @unique
   profilePicture   String?
-  user             User      @relation(fields: [userId], references: [id])  
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)  
   userId           String    @unique
   createdAt         DateTime  @default(now())
+  updatedAt DateTime @updatedAt
 }
