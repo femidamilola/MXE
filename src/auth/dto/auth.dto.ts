@@ -63,6 +63,19 @@ export class UpdateAccountDetails {
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsEmail()
-  email: string;
+  accountId: string;
+}
+
+export class updateAccountPinDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  oldPin: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  newPin: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  accountId: string;
 }
