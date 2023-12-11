@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma.service';
 import { MessageService } from 'src/utils/message.service';
 import {
   CreateAccountDto,
+  LoginDto,
   RequestMobileVerification,
   UpdateAccountDetails,
   VerifyMobileNumberDto,
@@ -10,6 +11,8 @@ import {
 } from './dto/auth.dto';
 import { UtilService } from 'src/utils/util.service';
 import { hash, verify } from 'argon2';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -17,6 +20,8 @@ export class AuthService {
     private prismaService: PrismaService,
     private messageService: MessageService,
     private utilService: UtilService,
+    private configService: ConfigService,
+    private jwtService: JwtService,
   ) {}
 
   async requestMobileVerification(
@@ -240,6 +245,47 @@ export class AuthService {
       });
 
       return { message: 'Account pin changed successfully' };
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async login(dto: LoginDto) {
+    try {
+      const mobileExists = await this.prismaService.user.findFirst({
+        where: { mobileNumber: dto.mobileNumber },
+      });
+      if (!mobileExists) {
+        throw new HttpException('User does not exist', HttpStatus.NOT_FOUND);
+      }
+
+      const account = await this.prismaService.account.findFirst({
+        where: { userId: mobileExists.id },
+      });
+
+      if (!account) {
+        throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      }
+
+      const isPinValid = await verify(account.pin, dto.pin);
+      if (!isPinValid) {
+        throw new HttpException('Incorrect pin', HttpStatus.UNAUTHORIZED);
+      }
+
+      const payload = {
+        sub: mobileExists.id,
+        accountId: account.id,
+        email: account.email,
+      };
+
+      const accessToken = await this.jwtService.signAsync(payload, {
+        secret: this.configService.get('JWT_ACCESS_SECRET'),
+        expiresIn: '15m',
+      });
+
+      return {
+        accessToken: accessToken,
+      };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
