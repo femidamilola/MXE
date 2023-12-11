@@ -1,13 +1,25 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import {
   CreateAccountDto,
+  LoginDto,
   RequestMobileVerification,
   UpdateAccountDetails,
   VerifyMobileNumberDto,
   updateAccountPinDto,
 } from './dto/auth.dto';
+import { GoogleAuthGuard } from './guards/google.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -39,6 +51,12 @@ export class AuthController {
     return this.authService.createAccount(dto);
   }
 
+  @Post('login')
+  @ApiOperation({ summary: 'Login a user' })
+  login(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
+  }
+
   @Get(':tag')
   @ApiOperation({ summary: 'Check if mxe tag exists' })
   checkMxeTagExists(@Param('tag') tag: string) {
@@ -55,5 +73,16 @@ export class AuthController {
   @ApiOperation({ summary: 'Update account pin' })
   updateAccountPin(@Body() dto: updateAccountPinDto) {
     return this.authService.updateAccountPin(dto);
+  }
+
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  async googleLogin() {}
+
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  async googleLoginCallback(@Req() req, @Res() res) {
+    const { accessToken, userId, userEmail } = req.user;
+    return res.send({ accessToken, userId, userEmail });
   }
 }
