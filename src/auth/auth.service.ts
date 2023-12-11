@@ -12,7 +12,6 @@ import {
 import { UtilService } from 'src/utils/util.service';
 import { hash, verify } from 'argon2';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +20,6 @@ export class AuthService {
     private prismaService: PrismaService,
     private messageService: MessageService,
     private utilService: UtilService,
-    private configService: ConfigService,
   ) {}
 
   async requestMobileVerification(
@@ -62,7 +60,7 @@ export class AuthService {
           },
         });
 
-        // hash the token using jwt and save
+        // hash token and sign using jwt and save
 
         await this.prismaService.otp.create({
           data: { otp: otp, user: { connect: { id: user.id } } },
