@@ -11,12 +11,13 @@ datasource db {
 }
 
 model User {
-  id                String      @id @default(uuid()) 
+  id                String      @id @default(uuid())
+  pin               String 
   email             String?     @unique
   isEmailVerified   Boolean     @default(false) 
   isGoogleUser      Boolean     @default(false)
-  mobileNumber      String?      @unique
-  countryCode       String?    @default("234")
+  mobileNumber      String?     @unique
+  countryCode       String?     @default("234")
   refreshToken      String?
   isMobileVerified  Boolean     @default(false)
   createdAt         DateTime    @default(now())
@@ -38,7 +39,6 @@ model Account {
   email            String    @unique
   firstName        String
   lastName         String
-  pin              String
   mxeTag           String   @unique
   profilePicture   String?
   user             User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)  
