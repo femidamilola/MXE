@@ -197,10 +197,10 @@ export class AuthService {
     }
   }
 
-  async updateAccountDetails(dto: UpdateAccountDetails) {
+  async updateAccountDetails(accountId: string, dto: UpdateAccountDetails) {
     try {
       const updatedAccount = await this.prismaService.account.update({
-        where: { id: dto.accountId },
+        where: { id: accountId },
         data: {
           firstName: dto.firstName,
           lastName: dto.lastName,
@@ -228,10 +228,10 @@ export class AuthService {
     }
   }
 
-  async updateAccountPin(dto: updateAccountPinDto) {
+  async updateAccountPin(userId: string, dto: updateAccountPinDto) {
     try {
       const user = await this.prismaService.user.findFirst({
-        where: { id: dto.userId },
+        where: { id: userId },
       });
       if (!user) {
         throw new HttpException('User does not exists', HttpStatus.NOT_FOUND);
@@ -243,7 +243,7 @@ export class AuthService {
       }
 
       await this.prismaService.user.update({
-        where: { id: dto.userId },
+        where: { id: userId },
         data: { pin: await hash(dto.newPin) },
       });
 

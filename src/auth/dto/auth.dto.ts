@@ -60,10 +60,6 @@ export class UpdateAccountDetails {
   @ApiProperty()
   @IsNotEmpty()
   mxeTag: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  accountId: string;
 }
 
 export class updateAccountPinDto {
@@ -74,10 +70,6 @@ export class updateAccountPinDto {
   @ApiProperty()
   @IsNotEmpty()
   newPin: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  userId: string;
 }
 
 export class LoginDto {

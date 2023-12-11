@@ -63,16 +63,22 @@ export class AuthController {
     return this.authService.checkMxeTagExists(tag);
   }
 
-  @Patch('account')
+  @Patch('account/:accountId')
   @ApiOperation({ summary: 'Update account details' })
-  updateAccountDetails(@Body() dto: UpdateAccountDetails) {
-    return this.authService.updateAccountDetails(dto);
+  updateAccountDetails(
+    @Body() dto: UpdateAccountDetails,
+    @Param(':accountId') accountId: string,
+  ) {
+    return this.authService.updateAccountDetails(accountId, dto);
   }
 
-  @Patch('account/change-pin')
+  @Patch('account/change-pin/:userId')
   @ApiOperation({ summary: 'Update account pin' })
-  updateAccountPin(@Body() dto: updateAccountPinDto) {
-    return this.authService.updateAccountPin(dto);
+  updateAccountPin(
+    @Body() dto: updateAccountPinDto,
+    @Param('userId') userId: string,
+  ) {
+    return this.authService.updateAccountPin(userId, dto);
   }
 
   @Get('google')
