@@ -17,11 +17,11 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AuthService {
   constructor(
+    private jwtService: JwtService,
     private prismaService: PrismaService,
     private messageService: MessageService,
     private utilService: UtilService,
     private configService: ConfigService,
-    private jwtService: JwtService,
   ) {}
 
   async requestMobileVerification(
@@ -273,15 +273,12 @@ export class AuthService {
       }
 
       const payload = {
-        sub: mobileExists.id,
+        userId: mobileExists.id,
         accountId: account.id,
         email: account.email,
       };
 
-      const accessToken = await this.jwtService.signAsync(payload, {
-        secret: this.configService.get('JWT_ACCESS_SECRET'),
-        expiresIn: '15m',
-      });
+      const accessToken = await this.jwtService.signAsync(payload);
 
       return {
         accessToken: accessToken,
