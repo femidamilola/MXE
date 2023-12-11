@@ -162,7 +162,6 @@ export class AuthService {
           user: {
             connect: { id: dto.userId },
           },
-          pin: await hash(dto.pin),
         },
         select: {
           id: true,
@@ -179,6 +178,13 @@ export class AuthService {
               mobileNumber: true,
             },
           },
+        },
+      });
+
+      await this.prismaService.user.update({
+        where: { id: dto.userId },
+        data: {
+          pin: await hash(dto.pin),
         },
       });
 
@@ -224,23 +230,20 @@ export class AuthService {
 
   async updateAccountPin(dto: updateAccountPinDto) {
     try {
-      const account = await this.prismaService.account.findFirst({
-        where: { id: dto.accountId },
+      const user = await this.prismaService.user.findFirst({
+        where: { id: dto.userId },
       });
-      if (!account) {
-        throw new HttpException(
-          'Account does not exists',
-          HttpStatus.NOT_FOUND,
-        );
+      if (!user) {
+        throw new HttpException('User does not exists', HttpStatus.NOT_FOUND);
       }
 
-      const passwordMatches = await verify(account.pin, dto.oldPin);
+      const passwordMatches = await verify(user.pin, dto.oldPin);
       if (!passwordMatches) {
         throw new HttpException('Incorrect password', HttpStatus.NOT_FOUND);
       }
 
-      await this.prismaService.account.update({
-        where: { id: dto.accountId },
+      await this.prismaService.user.update({
+        where: { id: dto.userId },
         data: { pin: await hash(dto.newPin) },
       });
 
@@ -252,30 +255,21 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     try {
-      const mobileExists = await this.prismaService.user.findFirst({
+      const user = await this.prismaService.user.findFirst({
         where: { mobileNumber: dto.mobileNumber },
       });
-      if (!mobileExists) {
+      if (!user) {
         throw new HttpException('User does not exist', HttpStatus.NOT_FOUND);
       }
 
-      const account = await this.prismaService.account.findFirst({
-        where: { userId: mobileExists.id },
-      });
-
-      if (!account) {
-        throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
-      }
-
-      const isPinValid = await verify(account.pin, dto.pin);
+      const isPinValid = await verify(user.pin, dto.pin);
       if (!isPinValid) {
         throw new HttpException('Incorrect pin', HttpStatus.UNAUTHORIZED);
       }
 
       const payload = {
-        userId: mobileExists.id,
-        accountId: account.id,
-        email: account.email,
+        userId: user.id,
+        email: user.email,
       };
 
       const accessToken = await this.jwtService.signAsync(payload);
