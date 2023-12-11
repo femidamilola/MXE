@@ -79,3 +79,13 @@ export class updateAccountPinDto {
   @IsNotEmpty()
   accountId: string;
 }
+
+export class LoginDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  mobileNumber: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  pin: string;
+}
