@@ -77,7 +77,7 @@ export class updateAccountPinDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  accountId: string;
+  userId: string;
 }
 
 export class LoginDto {
