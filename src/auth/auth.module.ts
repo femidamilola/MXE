@@ -8,6 +8,7 @@ import { PassportModule } from '@nestjs/passport';
 import { UtilService } from 'src/utils/util.service';
 import { ConfigService } from '@nestjs/config';
 import { jwtConstants } from './constants';
+import { GoogleStrategy } from './strategy/google.strategy';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { jwtConstants } from './constants';
     MessageService,
     UtilService,
     ConfigService,
+    GoogleStrategy,
   ],
 })
 export class AuthModule {}
