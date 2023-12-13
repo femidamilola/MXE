@@ -26,6 +26,17 @@ import { GoogleAuthGuard } from './guards/google.guard';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  async googleLogin() {}
+
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  async googleLoginCallback(@Req() req, @Res() res) {
+    const { accessToken, userId, userEmail } = req.user;
+    return res.send({ accessToken, userId, userEmail });
+  }
+
   @Post('request-mobile-verification/:type')
   @ApiParam({
     name: 'type',
@@ -79,16 +90,5 @@ export class AuthController {
     @Param('userId') userId: string,
   ) {
     return this.authService.updateAccountPin(userId, dto);
-  }
-
-  @Get('google')
-  @UseGuards(GoogleAuthGuard)
-  async googleLogin() {}
-
-  @Get('google/callback')
-  @UseGuards(GoogleAuthGuard)
-  async googleLoginCallback(@Req() req, @Res() res) {
-    const { accessToken, userId, userEmail } = req.user;
-    return res.send({ accessToken, userId, userEmail });
   }
 }
