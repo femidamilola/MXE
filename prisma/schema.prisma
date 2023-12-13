@@ -18,7 +18,6 @@ model User {
   isGoogleUser      Boolean     @default(false)
   mobileNumber      String?     @unique
   countryCode       String?     @default("234")
-  refreshToken      String?
   isMobileVerified  Boolean     @default(false)
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
