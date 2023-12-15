@@ -6,14 +6,18 @@ import { PaginationDto } from './dto/pagination.dto';
 export class WalletService {
   constructor(private prismaService: PrismaService) {}
 
-  async createWallet(email: string, accountId: string) {
+  async createWallet(email: string) {
     try {
+      const account = await this.prismaService.account.findUnique({
+        where: { email: email },
+      });
+
       const wallet = await this.prismaService.wallet.create({
         data: {
           email: email,
           account: {
             connect: {
-              id: accountId,
+              id: account.id,
             },
           },
         },
