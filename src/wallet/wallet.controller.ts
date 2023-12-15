@@ -11,7 +11,7 @@ export class WalletController {
   @Post('')
   @ApiOperation({ summary: 'Create wallet' })
   createWallet(@Req() req) {
-    return this.walletService.createWallet(req.email);
+    return this.walletService.createWallet(req.user.email);
   }
 
   @Get('transactions')
