@@ -78,12 +78,12 @@ export class AuthController {
   @ApiOperation({ summary: 'Update account details' })
   updateAccountDetails(
     @Body() dto: UpdateAccountDetails,
-    @Param(':accountId') accountId: string,
+    @Param('accountId') accountId: string,
   ) {
     return this.authService.updateAccountDetails(accountId, dto);
   }
 
-  @Patch('account/change-pin/:userId')
+  @Patch('change-pin/:userId')
   @ApiOperation({ summary: 'Update account pin' })
   updateAccountPin(
     @Body() dto: updateAccountPinDto,
