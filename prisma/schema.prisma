@@ -23,6 +23,7 @@ model User {
   updatedAt         DateTime    @updatedAt
   otp               Otp?
   account           Account?
+  beneficiaries     Wallet[]  @relation("beneficiaries")
 }
 
 model Otp {
@@ -43,6 +44,7 @@ model Account {
   user             User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)  
   userId           String    @unique
   wallet Wallet?
+  walletTransactions WalletTransaction[] @relation("owner")
   createdAt         DateTime  @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -50,9 +52,43 @@ model Account {
 model Wallet{
   id              String      @id @default(uuid())
   account         Account     @relation(fields: [accountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  email            String    @unique
-  accountId       String      @unique
-  balance Float @default(0)
+  email            String      @unique
+  accountId         String      @unique
+  balance         Float       @default(0)
   createdAt       DateTime  @default(now())
+  updatedAt DateTime    @updatedAt
+  userBeneficiaries User[] @relation("beneficiaries")
+}
+
+model WalletTransaction {
+  id              String      @id @default(uuid())
+  account Account @relation(name: "owner", fields: [accountEmail], references: [email], onUpdate: Cascade)
+  accountEmail String
+  isInflow Boolean
+  paymentMethod PaymentMethod
+  status TransactionStatus @default(PENDING)
+  amount Float
+  type TransactionType @default(TRANSFER)
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum PaymentMethod {
+  DEFI
+  CARD
+  TRANSFER
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum TransactionType {
+  TRANSFER
+  PAYMENT
+  BILL_PAYMENT
+  WITHDRAWAL
+  DEPOSIT
 }
