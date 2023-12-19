@@ -11,11 +11,18 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 import { VerificationService } from './verification.service';
 import { PaginationDto } from 'src/wallet/dto/pagination.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 
+@ApiSecurity('JWT-auth')
 @ApiTags('verification')
 @Controller('verification')
 export class VerificationController {

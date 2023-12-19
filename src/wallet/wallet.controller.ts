@@ -1,8 +1,9 @@
 import { Controller, Get, Query, Req, Post } from '@nestjs/common';
 import { WalletService } from './wallet.service';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from './dto/pagination.dto';
 
+@ApiSecurity('JWT-auth')
 @ApiTags('Wallet')
 @Controller('wallet')
 export class WalletController {
