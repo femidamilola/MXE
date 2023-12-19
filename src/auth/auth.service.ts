@@ -37,8 +37,11 @@ export class AuthService {
         );
       }
 
-      // delete user if it exists and mobile is not verified
-      if (userExists && userExists.isMobileVerified === false) {
+      if (
+        userExists.isMobileVerified === false &&
+        userExists.isGoogleUser === false &&
+        userExists.isIosUser === false
+      ) {
         await this.prismaService.user.delete({ where: { id: userExists.id } });
       }
 
@@ -60,10 +63,13 @@ export class AuthService {
           },
         });
 
-        // hash token and sign using jwt and save
+        const token = await this.jwtService.signAsync(
+          { otp },
+          { expiresIn: '5m' },
+        );
 
-        await this.prismaService.otp.create({
-          data: { otp: otp, user: { connect: { id: user.id } } },
+        await this.prismaService.token.create({
+          data: { token: token, user: { connect: { id: user.id } } },
         });
 
         return {
@@ -92,13 +98,14 @@ export class AuthService {
         );
       }
 
-      const otpExists = await this.prismaService.otp.findFirst({
+      const otpExists = await this.prismaService.token.findFirst({
         where: {
           user: {
             mobileNumber: dto.mobileNumber,
           },
         },
       });
+
       if (!otpExists) {
         throw new HttpException(
           'Mobile verification otp not found',
@@ -106,8 +113,9 @@ export class AuthService {
         );
       }
 
-      if (otpExists.otp !== dto.otp) {
-        throw new HttpException('Invalid otp', HttpStatus.UNAUTHORIZED);
+      const decodedOtp = await this.jwtService.decode(otpExists.token);
+      if (!decodedOtp || decodedOtp !== dto.otp) {
+        throw new HttpException('Otp Expired', HttpStatus.UNAUTHORIZED);
       }
 
       await this.prismaService.user.update({
@@ -115,7 +123,7 @@ export class AuthService {
         data: { isMobileVerified: true },
       });
 
-      await this.prismaService.otp.delete({ where: { id: otpExists.id } });
+      await this.prismaService.token.delete({ where: { id: otpExists.id } });
 
       return { message: 'Mobile number verified successfully' };
     } catch (error) {
@@ -179,10 +187,15 @@ export class AuthService {
         },
       });
 
+      await this.prismaService.accountVerification.create({
+        data: { accountId: account.id },
+      });
+
       await this.prismaService.user.update({
         where: { id: dto.userId },
         data: {
           pin: await hash(dto.pin),
+          email: dto.email,
         },
       });
 
@@ -195,10 +208,10 @@ export class AuthService {
     }
   }
 
-  async updateAccountDetails(accountId: string, dto: UpdateAccountDetails) {
+  async updateAccountDetails(email: string, dto: UpdateAccountDetails) {
     try {
       const updatedAccount = await this.prismaService.account.update({
-        where: { id: accountId },
+        where: { email: email },
         data: {
           firstName: dto.firstName,
           lastName: dto.lastName,
@@ -226,10 +239,10 @@ export class AuthService {
     }
   }
 
-  async updateAccountPin(userId: string, dto: updateAccountPinDto) {
+  async updateAccountPin(email: string, dto: updateAccountPinDto) {
     try {
       const user = await this.prismaService.user.findFirst({
-        where: { id: userId },
+        where: { email: email },
       });
       if (!user) {
         throw new HttpException('User does not exists', HttpStatus.NOT_FOUND);
@@ -241,7 +254,7 @@ export class AuthService {
       }
 
       await this.prismaService.user.update({
-        where: { id: userId },
+        where: { email: email },
         data: { pin: await hash(dto.newPin) },
       });
 
@@ -255,6 +268,7 @@ export class AuthService {
     try {
       const user = await this.prismaService.user.findFirst({
         where: { mobileNumber: dto.mobileNumber },
+        include: { account: { select: { id: true } } },
       });
       if (!user) {
         throw new HttpException('User does not exist', HttpStatus.NOT_FOUND);
@@ -268,6 +282,7 @@ export class AuthService {
       const payload = {
         userId: user.id,
         email: user.email,
+        accountId: user.account.id,
       };
 
       const accessToken = await this.jwtService.signAsync(payload);
@@ -276,6 +291,22 @@ export class AuthService {
         accessToken: accessToken,
       };
     } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async createAdmin(accountEmail: string) {
+    try {
+      await this.prismaService.account.update({
+        where: { email: accountEmail },
+        data: { role: 'ADMIN' },
+      });
+
+      return { message: 'Account updated to admin' };
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException('Account does not exist', HttpStatus.NOT_FOUND);
+      }
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
