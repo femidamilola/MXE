@@ -16,21 +16,22 @@ model User {
   email             String?     @unique
   isEmailVerified   Boolean     @default(false) 
   isGoogleUser      Boolean     @default(false)
+  isIosUser         Boolean     @default(false)
   mobileNumber      String?     @unique
   countryCode       String?     @default("234")
   isMobileVerified  Boolean     @default(false)
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
-  otp               Otp?
+  otp               Token?
   account           Account?
   beneficiaries     Wallet[]  @relation("beneficiaries")
 }
 
-model Otp {
+model Token {
   id                      String    @id @default(uuid())
   user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)  
   userId                  String    @unique
-  otp                     String
+  token                   String
   createdAt               DateTime  @default(now())
 }
 
@@ -40,13 +41,23 @@ model Account {
   firstName        String
   lastName         String
   mxeTag           String   @unique
+  isAccountVerified Boolean   @default(false)
+  role    Role   @default(USER)
   profilePicture   String?
   user             User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)  
   userId           String    @unique
   wallet Wallet?
+  accountVerification   AccountVerification?
+  bvn             String?
+  nationalIdCardUrl    String?
   walletTransactions WalletTransaction[] @relation("owner")
   createdAt         DateTime  @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN
+  USER
 }
 
 model Wallet{
@@ -91,4 +102,19 @@ enum TransactionType {
   BILL_PAYMENT
   WITHDRAWAL
   DEPOSIT
+}
+
+model AccountVerification {
+  id              String      @id @default(uuid())
+  account         Account      @relation(fields: [accountId], references: [id], onDelete: Cascade, onUpdate: Cascade)  
+  accountId           String    @unique
+  verificationStatus  VerificationStatus   @default(UN_VERIFIED)
+  createdAt DateTime @default(now())
+  dateVerified  DateTime @updatedAt
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  UN_VERIFIED
 }
