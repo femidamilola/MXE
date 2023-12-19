@@ -49,12 +49,14 @@ export class VerificationController {
   }
 
   @Patch('')
+  // add roles guard
   @ApiOperation({ summary: 'Verify an account' })
   verifyAccount(@Body() accountEmail: string) {
     return this.verificationService.verifyAccount(accountEmail);
   }
 
   @Get('')
+  // add roles guard
   @ApiOperation({ summary: 'View all pending verifications' })
   viewPendingVerifications(@Query() dto: PaginationDto) {
     return this.verificationService.viewPendingVerifications(dto);
