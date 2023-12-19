@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import {
   CreateAccountDto,
   LoginDto,
@@ -20,6 +20,7 @@ import {
   updateAccountPinDto,
 } from './dto/auth.dto';
 import { GoogleAuthGuard } from './guards/google.guard';
+import { JwtGuard } from './guards/jwt.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -74,21 +75,28 @@ export class AuthController {
     return this.authService.checkMxeTagExists(tag);
   }
 
-  @Patch('account/:accountId')
+  @UseGuards(JwtGuard)
+  @ApiSecurity('JWT-auth')
+  @Patch('account')
   @ApiOperation({ summary: 'Update account details' })
-  updateAccountDetails(
-    @Body() dto: UpdateAccountDetails,
-    @Param('accountId') accountId: string,
-  ) {
-    return this.authService.updateAccountDetails(accountId, dto);
+  updateAccountDetails(@Body() dto: UpdateAccountDetails, @Req() req) {
+    return this.authService.updateAccountDetails(req.user.email, dto);
   }
 
-  @Patch('change-pin/:userId')
+  @UseGuards(JwtGuard)
+  @ApiSecurity('JWT-auth')
+  @Patch('change-pin')
   @ApiOperation({ summary: 'Update account pin' })
-  updateAccountPin(
-    @Body() dto: updateAccountPinDto,
-    @Param('userId') userId: string,
-  ) {
-    return this.authService.updateAccountPin(userId, dto);
+  updateAccountPin(@Body() dto: updateAccountPinDto, @Req() req) {
+    console.log(req.user);
+    return this.authService.updateAccountPin(req.user.email, dto);
+  }
+
+  @UseGuards(JwtGuard)
+  @ApiSecurity('JWT-auth')
+  @Patch('account/admin')
+  @ApiOperation({ summary: 'Upgrade account to admin' })
+  createAdmin(@Body() accountEmail: string) {
+    return this.authService.createAdmin(accountEmail);
   }
 }
