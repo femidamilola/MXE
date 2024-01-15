@@ -83,9 +83,16 @@ model VirtualCard {
   wallet         Wallet     @relation(fields: [email], references: [email], onDelete: Cascade, onUpdate: Cascade)
   email           String      @unique
   currency   Currency  @default(NGN)
-  firstName        String?
-  lastName         String?
+  firstName        String
+  lastName         String
   phone           String
+  cardType        String
+  expiration      String
+  cvv             String
+  cardId          String
+  cardPan         String
+  transactionRef   String?
+  isActive        Boolean @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
