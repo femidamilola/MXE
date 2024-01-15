@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { PaginationDto } from './dto/pagination.dto';
 import { TransactionService } from 'src/transactions/transaction.service';
-import { FundAccountDto } from './dto/wallet.dto';
+import { CreateVirtualCardDto, FundAccountDto } from './dto/wallet.dto';
 
 @Injectable()
 export class WalletService {
@@ -149,6 +149,93 @@ export class WalletService {
       });
 
       return wallet;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async createVirtualCard(email: string, dto: CreateVirtualCardDto) {
+    try {
+      const wallet = await this.prismaService.wallet.findUnique({
+        where: { email: email },
+        include: {
+          virualAccount: {
+            select: {
+              id: true,
+              accountNumber: true,
+              bankName: true,
+              createdAt: true,
+            },
+          },
+          account: {
+            select: {
+              id: true,
+              email: true,
+              mxeTag: true,
+              firstName: true,
+              lastName: true,
+              mobileNumber: true,
+            },
+          },
+        },
+      });
+      const response = await this.transactionService.createVirtualCard(
+        dto.amount,
+        wallet.account.firstName,
+        wallet.account.lastName,
+        wallet.account.email,
+        wallet.account.mobileNumber,
+        dto.currency,
+      );
+
+      const virtualAccount = await this.prismaService.virtualCard.create({
+        data: {
+          wallet: {
+            connect: { email: response.data.email },
+          },
+          currency: response.data.currency,
+          firstName: wallet.account.firstName,
+          lastName: wallet.account.lastName,
+          phone: wallet.account.mobileNumber,
+          cardType: response.data.card_type,
+          expiration: response.data.expiration,
+          cvv: response.data.cvv,
+          cardPan: response.data.card_pan,
+          cardId: response.data.id,
+        },
+      });
+
+      return virtualAccount;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async getVirtualCard(email: string) {
+    try {
+      const virtualCard = await this.prismaService.virtualCard.findFirst({
+        where: { email: email },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          cardType: true,
+          cvv: true,
+          expiration: true,
+          cardPan: true,
+          cardId: true,
+          wallet: { select: { balance: true } },
+        },
+      });
+
+      if (!virtualCard) {
+        throw new HttpException(
+          'Virtual card does not exists',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return virtualCard;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
