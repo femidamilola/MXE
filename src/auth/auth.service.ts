@@ -174,6 +174,7 @@ export class AuthService {
           mxeTag: dto.mxeTag,
           firstName: dto.firstName,
           lastName: dto.lastName,
+          bvn: dto.bvn,
         },
         select: {
           id: true,

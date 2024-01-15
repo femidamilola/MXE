@@ -46,6 +46,10 @@ export class CompleteAccountRegistrationDto {
   @ApiProperty()
   @IsNotEmpty()
   mxeTag: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  bvn: string;
 }
 
 export class VerifyAccountDto {
