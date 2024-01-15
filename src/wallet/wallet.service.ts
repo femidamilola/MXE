@@ -30,6 +30,7 @@ export class WalletService {
       const wallet = await this.prismaService.wallet
         .create({
           data: {
+            mxeTag: account.mxeTag,
             account: {
               connect: {
                 email: account.email,
@@ -125,6 +126,7 @@ export class WalletService {
 
   async getWalletDetails(email: string) {
     try {
+      console.log(email);
       const wallet = await this.prismaService.wallet.findUnique({
         where: { email: email },
         include: {
@@ -141,6 +143,18 @@ export class WalletService {
               id: true,
               email: true,
               mxeTag: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          virtualCard: {
+            select: {
+              id: true,
+              cardType: true,
+              cardPan: true,
+              cvv: true,
+              expiration: true,
+              phone: true,
               firstName: true,
               lastName: true,
             },

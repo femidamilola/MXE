@@ -1,21 +1,10 @@
-import {
-  Controller,
-  Get,
-  Query,
-  Req,
-  Post,
-  Param,
-  Body,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Query, Req, Post, Param, Body } from '@nestjs/common';
 import { WalletService } from './wallet.service';
 import { ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from './dto/pagination.dto';
 import { CreateVirtualCardDto } from './dto/wallet.dto';
-import { JwtGuard } from 'src/auth/guards/jwt.guard';
 
 @ApiSecurity('JWT-auth')
-@UseGuards(JwtGuard)
 @ApiTags('Wallet')
 @Controller('wallet')
 export class WalletController {
@@ -68,6 +57,7 @@ export class WalletController {
   @Get('virtual-card')
   @ApiOperation({ summary: 'Get virtual card details' })
   async getVirtualCard(@Req() req) {
+    console.log(req.user);
     return this.walletService.getVirtualCard(req.user.email);
   }
 
