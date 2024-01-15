@@ -40,6 +40,18 @@ export class CreateVirtualCardDto {
   amount: number;
 
   @IsNotEmpty()
-  @ApiProperty()
+  @ApiProperty({ default: 'USD' })
   currency: Currency;
+
+  @IsNotEmpty()
+  @ApiProperty()
+  dob: string;
+
+  @IsNotEmpty()
+  @ApiProperty({ default: 'MR' })
+  title: string;
+
+  @IsNotEmpty()
+  @ApiProperty({ default: 'M' })
+  gender: string;
 }
