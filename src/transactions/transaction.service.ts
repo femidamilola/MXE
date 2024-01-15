@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Currency } from '@prisma/client';
 const Flutterwave = require('flutterwave-node-v3');
+// import FlutterWave from 'flutterwave-node-v3'
 
 @Injectable()
 export class TransactionService {
@@ -100,6 +101,9 @@ export class TransactionService {
     lastName: string,
     email: string,
     phone: string,
+    dob: string,
+    title: string,
+    gender: string,
     currency?: Currency,
   ) {
     try {
@@ -110,6 +114,9 @@ export class TransactionService {
         last_name: lastName,
         email: email,
         phone: phone,
+        date_of_birth: dob,
+        title: title,
+        gender: gender,
       };
 
       const response = await this.flw.VirtualCard.create(payload);

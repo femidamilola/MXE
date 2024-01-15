@@ -156,6 +156,8 @@ export class WalletService {
 
   async createVirtualCard(email: string, dto: CreateVirtualCardDto) {
     try {
+      // ensure user does not already have a virtual card
+
       const wallet = await this.prismaService.wallet.findUnique({
         where: { email: email },
         include: {
@@ -185,6 +187,9 @@ export class WalletService {
         wallet.account.lastName,
         wallet.account.email,
         wallet.account.mobileNumber,
+        dto.dob,
+        dto.title,
+        dto.gender,
         dto.currency,
       );
 
