@@ -10,50 +10,44 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id                String      @id @default(uuid())
-  pin               String? 
-  email             String?     @unique
+model Account {
+  id                String    @id @default(uuid())
+  pin               String?
+  mobileNumber      String     @unique
   isEmailVerified   Boolean     @default(false) 
   isGoogleUser      Boolean     @default(false)
   isIosUser         Boolean     @default(false)
-  mobileNumber      String?     @unique
   countryCode       String?     @default("234")
   isMobileVerified  Boolean     @default(false)
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  email            String?    @unique
   otp               Token?
-  account           Account?
+  firstName        String?
+  lastName         String?
+  mxeTag           String?   @unique
+  isAccountVerified Boolean   @default(false)
+  role    Role   @default(USER)
+  profilePicture   String?
+  wallet Wallet?
+  walletTransactions WalletTransaction[] @relation("owner")
+  walletTransactionsSecondary WalletTransaction[] @relation("secondaryParty")
+  accountVerification   AccountVerification?
+  bvn             String?
+  nationalIdCardUrl    String?
   beneficiaries     Wallet[]  @relation("beneficiaries")
+  createdAt         DateTime  @default(now())
+  updatedAt DateTime @updatedAt
+  debitTransactions Transaction[] @relation("Sender")
+  creditTransactions Transaction[] @relation("Receiver")
 }
 
 model Token {
   id                      String    @id @default(uuid())
-  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)  
-  userId                  String    @unique
+  account                 Account      @relation(fields: [accountId], references: [id], onDelete: Cascade, onUpdate: Cascade)  
+  accountId               String    @unique
   token                   String
   createdAt               DateTime  @default(now())
 }
 
-model Account {
-  id               String    @id @default(uuid())
-  email            String    @unique
-  firstName        String
-  lastName         String
-  mxeTag           String   @unique
-  isAccountVerified Boolean   @default(false)
-  role    Role   @default(USER)
-  profilePicture   String?
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)  
-  userId           String    @unique
-  wallet Wallet?
-  accountVerification   AccountVerification?
-  bvn             String?
-  nationalIdCardUrl    String?
-  walletTransactions WalletTransaction[] @relation("owner")
-  createdAt         DateTime  @default(now())
-  updatedAt DateTime @updatedAt
-}
 
 enum Role {
   ADMIN
@@ -62,32 +56,94 @@ enum Role {
 
 model Wallet{
   id              String      @id @default(uuid())
-  account         Account     @relation(fields: [accountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  account         Account     @relation( fields: [email], references: [email], onDelete: Cascade, onUpdate: Cascade)
   email            String      @unique
-  accountId         String      @unique
+  virualAccount VirtualAccount?   
+  virtualCard   VirtualCard?
   balance         Float       @default(0)
   createdAt       DateTime  @default(now())
+  mxeTag        String?
   updatedAt DateTime    @updatedAt
-  userBeneficiaries User[] @relation("beneficiaries")
+  accountBeneficiaries Account[] @relation("beneficiaries")
+}
+
+model VirtualAccount {
+  id              String      @id @default(uuid())
+  wallet         Wallet     @relation(fields: [email], references: [email], onDelete: Cascade, onUpdate: Cascade)
+  email           String      @unique
+  accountNumber   String      @unique
+  bankName    String
+  transactionRef   String
+  flwRef        String
+  createdAt       DateTime  @default(now())
+}
+
+model VirtualCard {
+  id              String      @id @default(uuid())
+  wallet         Wallet     @relation(fields: [email], references: [email], onDelete: Cascade, onUpdate: Cascade)
+  email           String      @unique
+  currency   Currency  @default(NGN)
+  firstName        String?
+  lastName         String?
+  phone           String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model WalletTransaction {
   id              String      @id @default(uuid())
   account Account @relation(name: "owner", fields: [accountEmail], references: [email], onUpdate: Cascade)
   accountEmail String
-  isInflow Boolean
+  secondaryParty Account @relation(name: "secondaryParty", fields: [secondaryEmail], references: [email], onUpdate: Cascade)
+  secondaryEmail String
+  isInflow Boolean  @default(true)
   paymentMethod PaymentMethod
   status TransactionStatus @default(PENDING)
   amount Float
   type TransactionType @default(TRANSFER)
+  transactionRef   String
+  currency  Currency  @default(NGN)
+  ownerMxeTag   String?
+  secondaryMxeTag String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Transaction {
+  id        String      @id @default(uuid())
+  transactionRef   String
+  mobileNumber  String?
+  amount      Float
+  flwRef String?
+  name      String?
+  currency   Currency  @default(NGN)
+  transactionTime DateTime @default(now())
+  paymentGateway PaymentGateway @default(FLUTTERWAVE)
+  sender Account @relation("Sender", fields: [senderEmail], references: [email], onDelete: Cascade, onUpdate: Cascade)
+  senderEmail String
+  receiver Account @relation("Receiver", fields: [receiverEmail], references: [email], onDelete: Cascade, onUpdate: Cascade)
+  receiverEmail String
+  type TransactionType @default(TRANSFER)
+  status TransactionStatus @default(PENDING)
+}
+
+enum PaymentGateway {
+  PAYSTACK
+  FLUTTERWAVE
+  STRIPE
+  PAYPAL
+  WALLET
 }
 
 enum PaymentMethod {
   DEFI
   CARD
   TRANSFER
+}
+
+enum Currency {
+  NGN
+  USD
 }
 
 enum TransactionStatus {

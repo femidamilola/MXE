@@ -11,7 +11,44 @@ export class RequestMobileVerification {
   countryCode: string;
 }
 
-export class VerifyMobileNumberDto {
+export class RegisterAccountDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  mobileNumber: string;
+
+  @ApiProperty({ default: '+234' })
+  @IsOptional()
+  countryCode: string;
+}
+
+export class CompleteAccountRegistrationDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  firstName: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  lastName: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  pin: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  confirmPin: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  mxeTag: string;
+}
+
+export class VerifyAccountDto {
   @ApiProperty()
   @IsNotEmpty()
   mobileNumber: string;
@@ -21,7 +58,7 @@ export class VerifyMobileNumberDto {
   otp: string;
 }
 
-export class CreateAccountDto {
+export class CreateAccountDtoOld {
   @ApiProperty()
   @IsNotEmpty()
   @IsEmail()

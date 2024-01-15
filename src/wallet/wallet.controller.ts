@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Req, Post } from '@nestjs/common';
+import { Controller, Get, Query, Req, Post, Param } from '@nestjs/common';
 import { WalletService } from './wallet.service';
 import { ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from './dto/pagination.dto';
@@ -19,6 +19,32 @@ export class WalletController {
   @ApiOperation({ summary: "Get all a wallet's transcations" })
   getWalletTransactions(@Query() dto: PaginationDto, @Req() req) {
     return this.walletService.getWalletTransactions(req.user.email, dto);
+  }
+
+  @Get(':walletTransactionId')
+  @ApiOperation({ summary: 'Get a wallet transaction by id' })
+  getWaletTransactionById(
+    @Param('walletTransactionId') walletTransactionId: string,
+    @Req() req,
+  ) {
+    return this.walletService.getWaletTransactionById(
+      req.user.email,
+      walletTransactionId,
+    );
+  }
+
+  @Get('ref/:transactionRef')
+  @ApiOperation({
+    summary: 'Get a wallet transaction by transaction reference',
+  })
+  getWalletTransactionByRef(
+    @Param('transactionRef') transactionRef: string,
+    @Req() req,
+  ) {
+    return this.walletService.getWalletTransactionByRef(
+      req.user.email,
+      transactionRef,
+    );
   }
 
   @Get('details')

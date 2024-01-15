@@ -27,47 +27,43 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     googleRefreshToken: string,
     profile: Profile,
   ) {
-    console.log(googleAccessToken);
-    console.log(googleRefreshToken);
-
-    const userExists = await this.prisma.user.findFirst({
+    const accountExists = await this.prisma.account.findFirst({
       where: { email: profile._json.email },
     });
 
-    if (!userExists) {
-      const user = await this.prisma.user.create({
+    if (!accountExists) {
+      const account = await this.prisma.account.create({
         data: {
           email: profile._json.email,
           isGoogleUser: true,
           isEmailVerified: true,
+          mobileNumber: null,
         },
       });
 
       const payload = {
-        userId: user.id,
-        userEmail: user.email,
+        accountId: account.id,
+        email: account.email,
       };
       const accessToken = await this.jwtService.signAsync(payload);
 
       return {
         accessToken: accessToken,
-        userId: user.id,
-        userEmail: user.email,
-        createdAt: user.createdAt,
+        googleAccessToken,
+        googleRefreshToken,
       };
     }
 
     const payload = {
-      userId: userExists.id,
-      userEmail: userExists.email,
+      accountId: accountExists.id,
+      email: accountExists.email,
     };
     const accessToken = await this.jwtService.signAsync(payload);
 
     return {
       accessToken: accessToken,
-      userId: userExists.id,
-      userEmail: userExists.email,
-      createdAt: userExists.createdAt,
+      googleAccessToken,
+      googleRefreshToken,
     };
   }
 }

@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { WalletModule } from './wallet/wallet.module';
 import { VerificationModule } from './verification/verification.module';
 import { UploadService } from './utils/upload.service';
+import { TransactionModule } from './transactions/transactions.moule';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { UploadService } from './utils/upload.service';
     AuthModule,
     WalletModule,
     VerificationModule,
+    TransactionModule,
   ],
   controllers: [],
   providers: [

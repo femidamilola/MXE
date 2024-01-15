@@ -22,7 +22,7 @@ export class MessageService {
    * @param to : reciever address
    * @param body : body of message
    */
-  async sendTestMessage(to: string, body: string) {
+  async sendTextMessage(to: string, body: string) {
     await this.client.messages
       .create({
         to: to,

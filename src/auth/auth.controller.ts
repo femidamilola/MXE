@@ -10,17 +10,17 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiOperation, ApiParam, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import {
-  CreateAccountDto,
+  CompleteAccountRegistrationDto,
   LoginDto,
-  RequestMobileVerification,
-  UpdateAccountDetails,
-  VerifyMobileNumberDto,
+  RegisterAccountDto,
+  VerifyAccountDto,
   updateAccountPinDto,
 } from './dto/auth.dto';
 import { GoogleAuthGuard } from './guards/google.guard';
 import { JwtGuard } from './guards/jwt.guard';
+import { Public } from './decorators/public.decorator';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -38,49 +38,49 @@ export class AuthController {
     return res.send({ accessToken, userId, userEmail });
   }
 
-  @Post('request-mobile-verification/:type')
-  @ApiParam({
-    name: 'type',
-    enum: ['email', 'mobile'],
-  })
-  @ApiOperation({ summary: ' Request for mobile verification' })
-  requestMobileVerification(
-    @Body() dto: RequestMobileVerification,
-    @Param('type') type: 'email' | 'mobile',
-  ) {
-    return this.authService.requestMobileVerification(dto, type);
+  @Public()
+  @Post('register')
+  @ApiOperation({ summary: 'Start account registration' })
+  registerAccount(@Body() dto: RegisterAccountDto) {
+    return this.authService.registerAccount(dto);
   }
 
-  @Post('verify-mobile')
-  @ApiOperation({ summary: 'Verify Mobile' })
-  verifyMobile(@Body() dto: VerifyMobileNumberDto) {
-    return this.authService.verifyMobile(dto);
+  @Public()
+  @Post('resend-verification-otp/:accountId')
+  @ApiOperation({ summary: 'Resend verification otp' })
+  resendVerificationOtp(@Param('accountId') accountId: string) {
+    return this.authService.resendVerificationOtp(accountId);
   }
 
-  @Post('create-account')
-  @ApiOperation({ summary: 'Create account for user' })
-  createAccount(@Body() dto: CreateAccountDto) {
-    return this.authService.createAccount(dto);
+  @Public()
+  @Patch('verify-account')
+  @ApiOperation({ summary: 'Verify account' })
+  verifyAccount(@Body() dto: VerifyAccountDto) {
+    return this.authService.verifyAccount(dto);
   }
 
-  @Post('login')
-  @ApiOperation({ summary: 'Login a user' })
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
-  }
-
+  @Public()
   @Get(':tag')
   @ApiOperation({ summary: 'Check if mxe tag exists' })
   checkMxeTagExists(@Param('tag') tag: string) {
     return this.authService.checkMxeTagExists(tag);
   }
 
-  @UseGuards(JwtGuard)
-  @ApiSecurity('JWT-auth')
-  @Patch('account')
-  @ApiOperation({ summary: 'Update account details' })
-  updateAccountDetails(@Body() dto: UpdateAccountDetails, @Req() req) {
-    return this.authService.updateAccountDetails(req.user.email, dto);
+  @Public()
+  @Patch('complete-account-registration/:mobileNumber')
+  @ApiOperation({ summary: 'Complete account registration' })
+  completeAccountRegistration(
+    @Body() dto: CompleteAccountRegistrationDto,
+    @Param('mobileNumber') mobileNumber: string,
+  ) {
+    return this.authService.completeAccountRegistration(mobileNumber, dto);
+  }
+
+  @Public()
+  @Post('login')
+  @ApiOperation({ summary: 'Login a user' })
+  login(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
   }
 
   @UseGuards(JwtGuard)
@@ -88,8 +88,7 @@ export class AuthController {
   @Patch('change-pin')
   @ApiOperation({ summary: 'Update account pin' })
   updateAccountPin(@Body() dto: updateAccountPinDto, @Req() req) {
-    console.log(req.user);
-    return this.authService.updateAccountPin(req.user.email, dto);
+    return this.authService.updateAccountPin(req.user.accountId, dto);
   }
 
   @UseGuards(JwtGuard)
