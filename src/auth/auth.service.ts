@@ -220,6 +220,10 @@ export class AuthService {
         where: { mobileNumber: dto.mobileNumber },
       });
 
+      if (!account) {
+        throw new HttpException('Account does not exist', HttpStatus.NOT_FOUND);
+      }
+
       const pinMatches = await verify(account.pin, dto.pin);
       if (!pinMatches) {
         throw new HttpException('Incorrect pin', HttpStatus.UNAUTHORIZED);
