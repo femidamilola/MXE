@@ -33,3 +33,13 @@ export class FundAccountDto {
   @ApiProperty()
   narration?: string;
 }
+
+export class CreateVirtualCardDto {
+  @IsNotEmpty()
+  @ApiProperty()
+  amount: number;
+
+  @IsNotEmpty()
+  @ApiProperty()
+  currency: Currency;
+}
