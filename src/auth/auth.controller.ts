@@ -60,13 +60,6 @@ export class AuthController {
   }
 
   @Public()
-  @Get(':tag')
-  @ApiOperation({ summary: 'Check if mxe tag exists' })
-  checkMxeTagExists(@Param('tag') tag: string) {
-    return this.authService.checkMxeTagExists(tag);
-  }
-
-  @Public()
   @Patch('complete-account-registration/:mobileNumber')
   @ApiOperation({ summary: 'Complete account registration' })
   completeAccountRegistration(
@@ -97,5 +90,20 @@ export class AuthController {
   @ApiOperation({ summary: 'Upgrade account to admin' })
   createAdmin(@Body() accountEmail: string) {
     return this.authService.createAdmin(accountEmail);
+  }
+
+  @UseGuards(JwtGuard)
+  @ApiSecurity('JWT-auth')
+  @Get('account')
+  @ApiOperation({ summary: 'Get account details' })
+  getAccountDetails(@Req() req) {
+    return this.authService.getAccountDetails(req.user.email);
+  }
+
+  @Public()
+  @Get(':tag')
+  @ApiOperation({ summary: 'Check if mxe tag exists' })
+  checkMxeTagExists(@Param('tag') tag: string) {
+    return this.authService.checkMxeTagExists(tag);
   }
 }
