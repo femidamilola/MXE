@@ -85,6 +85,13 @@ export class WalletService {
           where: { transactionRef: transactionRef },
         });
 
+      if (!walletTransaction) {
+        throw new HttpException(
+          'Transaction does not exist',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
       if (
         walletTransaction.accountEmail !== email ||
         walletTransaction.secondaryEmail !== email
@@ -101,12 +108,19 @@ export class WalletService {
     }
   }
 
-  async getWaletTransactionById(email: string, walletTransactionId: string) {
+  async getWalletTransactionById(email: string, walletTransactionId: string) {
     try {
       const walletTransaction =
         await this.prismaService.walletTransaction.findFirst({
           where: { id: walletTransactionId },
         });
+
+      if (!walletTransaction) {
+        throw new HttpException(
+          'Transaction does not exist',
+          HttpStatus.NOT_FOUND,
+        );
+      }
 
       if (
         walletTransaction.accountEmail !== email ||
@@ -126,7 +140,6 @@ export class WalletService {
 
   async getWalletDetails(email: string) {
     try {
-      console.log(email);
       const wallet = await this.prismaService.wallet.findUnique({
         where: { email: email },
         include: {
@@ -195,6 +208,7 @@ export class WalletService {
           },
         },
       });
+
       const response = await this.transactionService.createVirtualCard(
         dto.amount,
         wallet.account.firstName,
