@@ -10,30 +10,6 @@ import { CreateVirtualCardDto } from './dto/wallet.dto';
 export class WalletController {
   constructor(private walletService: WalletService) {}
 
-  @Post('')
-  @ApiOperation({ summary: 'Create wallet' })
-  createWallet(@Req() req) {
-    return this.walletService.createWallet(req.user.email);
-  }
-
-  @Get('transactions')
-  @ApiOperation({ summary: "Get all a wallet's transcations" })
-  getWalletTransactions(@Query() dto: PaginationDto, @Req() req) {
-    return this.walletService.getWalletTransactions(req.user.email, dto);
-  }
-
-  @Get(':walletTransactionId')
-  @ApiOperation({ summary: 'Get a wallet transaction by id' })
-  getWaletTransactionById(
-    @Param('walletTransactionId') walletTransactionId: string,
-    @Req() req,
-  ) {
-    return this.walletService.getWaletTransactionById(
-      req.user.email,
-      walletTransactionId,
-    );
-  }
-
   @Get('ref/:transactionRef')
   @ApiOperation({
     summary: 'Get a wallet transaction by transaction reference',
@@ -58,7 +34,31 @@ export class WalletController {
   @ApiOperation({ summary: 'Get virtual card details' })
   async getVirtualCard(@Req() req) {
     console.log(req.user);
-    return this.walletService.getVirtualCard(req.user.email);
+    return await this.walletService.getVirtualCard(req.user.email);
+  }
+
+  @Get(':walletTransactionId')
+  @ApiOperation({ summary: 'Get a wallet transaction by id' })
+  getWaletTransactionById(
+    @Param('walletTransactionId') walletTransactionId: string,
+    @Req() req,
+  ) {
+    return this.walletService.getWalletTransactionById(
+      req.user.email,
+      walletTransactionId,
+    );
+  }
+
+  @Post('')
+  @ApiOperation({ summary: 'Create wallet' })
+  createWallet(@Req() req) {
+    return this.walletService.createWallet(req.user.email);
+  }
+
+  @Get('transactions')
+  @ApiOperation({ summary: "Get all a wallet's transcations" })
+  getWalletTransactions(@Query() dto: PaginationDto, @Req() req) {
+    return this.walletService.getWalletTransactions(req.user.email, dto);
   }
 
   @Post('virtual-card')
