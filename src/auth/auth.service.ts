@@ -260,6 +260,29 @@ export class AuthService {
     }
   }
 
+  async getAccountDetails(email: string) {
+    try {
+      return await this.prismaService.account.findFirst({
+        where: { email },
+        select: {
+          id: true,
+          mobileNumber: true,
+          isEmailVerified: true,
+          isAccountVerified: true,
+          isGoogleUser: true,
+          isIosUser: true,
+          isMobileVerified: true,
+          countryCode: true,
+          firstName: true,
+          lastName: true,
+          mxeTag: true,
+        },
+      });
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   async verifyBvn() {
     try {
     } catch (error) {
